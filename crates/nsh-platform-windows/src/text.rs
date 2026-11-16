@@ -3921,6 +3921,8 @@ mod tests {
                 color: Color(0xeeee_eeff),
                 radius: px(4.0),
                 node: 4,
+                top: Default::default(),
+                bottom: Default::default(),
             }),
             ..style
         };
