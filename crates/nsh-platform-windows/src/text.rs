@@ -3267,6 +3267,21 @@ impl WinLayout {
                     descent: Points(descent),
                 }));
             }
+            // Attachments hold no glyphs: their room (a span's padding
+            // too) is in the background of their span.
+            let range = line.info.start..line.info.end;
+            pieces.extend(
+                self.inline
+                    .iter()
+                    .filter(|a| range.contains(&a.index))
+                    .map(|a| nsh_core::LinePiece {
+                        x: Points(a.x),
+                        width: Points(a.width),
+                        background: text.background_at(a.index),
+                        ascent: Points(0.0),
+                        descent: Points(0.0),
+                    }),
+            );
             pieces.sort_by(|a, b| a.x.0.total_cmp(&b.x.0));
             let clip = (line.info.x, line.info.x + line.info.width);
             nsh_core::BackgroundBox::join(pieces.iter().copied(), clip, |b| {
