@@ -804,6 +804,26 @@ impl TextEngine for WebTextEngine {
             let mut hanging: f32 = atoms[end..line.end].iter().map(|a| a.width).sum();
             if last && truncated && prepared.ellipsize != EllipsizeMode::Clip {
                 hanging = 0.0;
+                // The cut line runs on to the edge, as a native label's
+                // does: what follows it fills the room its wrap left (a
+                // long word, such as a link, would otherwise leave the line
+                // at its last break, "Open https://the-…"), up to the next
+                // forced break. One piece past the edge is enough: the
+                // ellipsis below cuts it back.
+                for atom in &atoms[end..] {
+                    if width > size.width.0 + 0.01 || atom.kind == AtomKind::Newline {
+                        break;
+                    }
+                    pieces.push(Part {
+                        text: atom.text.clone(),
+                        style: atom.style,
+                        width: atom.width,
+                        kind: atom.kind,
+                        start: atom.start,
+                        ellipsis: false,
+                    });
+                    width += atom.width;
+                }
                 let style = pieces.last().map_or(0, |p| p.style);
                 let ellipsis = self.run_width(&styles[style as usize], "…");
                 // Drop characters from the end until the ellipsis fits.
